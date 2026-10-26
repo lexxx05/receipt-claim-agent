@@ -1,0 +1,14 @@
+# abaikan .env 
+.env* 
+!.env.example 
+
+# abaikan data 
+data/* 
+!data/README.md 
+
+# abaikan output 
+output/ 
+
+# abaikan file cache jupyter 
+__pycache__/
+.ipynb_checkpoints/ 
