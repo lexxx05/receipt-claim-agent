@@ -2,8 +2,14 @@ from paddleocr import PaddleOCR
 import time
 from pathlib import Path
 
-IMAGE_PATH = "../data/samples/image.jpg"
-OUTPUT_DIR = "../output/smoke_test"
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+IMAGE_PATH = PROJECT_ROOT / "data" / "samples" / "image.jpg"
+OUTPUT_DIR = PROJECT_ROOT / "output" / "smoke_test"
+
+if not IMAGE_PATH.is_file():
+    raise SystemExit(f"[ERROR] Gambar tidak ditemukan: {IMAGE_PATH}")
+
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 start = time.perf_counter()
 ocr = PaddleOCR(
@@ -14,7 +20,7 @@ ocr = PaddleOCR(
 load_seconds = time.perf_counter() - start
 
 start = time.perf_counter()
-result = ocr.predict(IMAGE_PATH)
+result = ocr.predict(str(IMAGE_PATH))
 predict_seconds = time.perf_counter() - start
 
 print(f"[INFO] OCR Result type: {type(result)}\n[INFO] OCR Result Lenght: {len(result)}\n")
