@@ -103,7 +103,8 @@ Legend: ✓ holds · ✗ does not hold · – cannot be checked (field missing)
 - Some receipts use a dot as the **decimal** separator with no thousands separator (`58000.00`, `35000.00`; 0077, 0090).
 - Rule that fits every observed **money** value: if the last separator is followed by exactly **2** digits it is a decimal point; if followed by **3** digits it is a thousands separator.
 - Real cents appear once in the whole dev split (`5272.73`, a tax-included amount in 0077); all other decimals are `.00`.
-- Prefixes/suffixes: `Rp`, `@`, `x`/`X`, `*`, `:` (label noise); negative values use a leading `-` (`-9,545`, `-Rp 34,363`).
+- Prefixes/suffixes: `Rp`, `@`, `x`/`X`, `*`, `:` (label noise).
+- Negative values use a leading `-` (`-9,545`, `-Rp 34,363`) or accounting parentheses: GT `"60.000)"` in 0055 must be negative, since 60,000 + 60,000 + (−60,000) = 60,000 = total.
 
 ### 4.2 Arithmetic
 Two separate questions decide whether a receipt adds up. 
@@ -125,6 +126,7 @@ Three representations in the GT:
 - Receipt-level `sub_total.discount_price` (0007, alongside the item-level value).
 - A separate menu line with a negative price (0021, "Discount BCA 15%").
 - The meaning of `subtotal` is **not consistent**: before discount in 0007, after discount in 0008.
+- The same printed layout is labeled differently: a discount printed on its own line is a separate negative item in 0021 but an item-level `discountprice` attached to the previous item in 0055. Item-level scores can differ even when totals match.
 
 ### 4.4 Item structure
 - Qty position: left of the name (0000, 0002, 0003, 0004, 0021, 0025), right of the name (0001), on the line **above** the name (0008), on the line **below** the name (0005, 0014). 
@@ -141,6 +143,7 @@ Three representations in the GT:
 - Unlabeled text (store, address, footer) has no GT box, so OCR precision cannot be measured.
 - Minor label noise: `":9,000"` (0004), word order `Mie Trsi Kgkung` vs printed `Mie Kgkung Trsi` (0025).
 - Unusual GT value: sub-item qty `".5"` (0022).
+- One GT sub-item has no name (0086: `{"price": "26,000"}` under `LEMONADE22OZ`). The schema requires a sub-item name, so this sub-item is dropped when the GT is normalized and does not count in evaluation.
 
 
 ## 5. Design decisions
@@ -159,7 +162,7 @@ Three representations in the GT:
 
 | Component | Implication |
 |---|---|
-| Normalization | Strip `Rp`, `@`, `x`/`X`, `*`, `:`; keep a leading `-`; last separator + 2 digits = decimal, + 3 digits = thousands; qty `1.00` → 1 |
+| Normalization | Strip `Rp`, `@`, `x`/`X`, `*`, `:`; a leading `-` or surrounding/trailing parentheses mean negative; last separator + 2 digits = decimal, + 3 digits = thousands; qty `1.00` → 1 |
 | Preprocessing | Group text into lines by y; filter low-score text; watermarks and stamps overlap digits on some receipts |
 | Prompt | Cover 4 qty positions (left, right, above, below the name), missing qty, 3 discount forms, sub-items, and tax-included receipts; few-shot examples span these variants |
 | Validator | (1) qty × unitprice ≈ price when both exist; (2) Σprice **or** Σ(price + item discount) ≈ subtotal **or** ≈ total; (3) total ≈ subtotal + service + tax + discount **or** total ≈ subtotal (tax included); small tolerance for rounding |
