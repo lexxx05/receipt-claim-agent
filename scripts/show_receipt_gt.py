@@ -1,7 +1,11 @@
 """
 script to check the ground truth receipt and image receipt
 purpose: data understanding
+
+how to run:
+Type in CMD: `python scripts\\show_receipt.py <dev|test> <image_id>`
 """
+
 import json
 import os
 import sys
@@ -24,7 +28,7 @@ def load_record(split: str, image_id: int) -> dict:
 
 def main() -> None:
     if len(sys.argv) != 3:
-        raise SystemExit("Pakai: python scripts\\show_receipt.py <dev|test> <image_id>")
+        raise SystemExit("Type: python scripts\\show_receipt.py <dev|test> <image_id>")
 
     split, image_id = sys.argv[1], int(sys.argv[2])
     record = load_record(split, image_id)
